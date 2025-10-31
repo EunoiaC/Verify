@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "ClaimVer",
+  "version": "1.0",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": ["https://www.reddit.com/*", "http://127.0.0.1:5000/receive/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.reddit.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
