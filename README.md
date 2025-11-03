@@ -85,7 +85,7 @@ Verify searches a wide range of reputable sources to ensure accurate verificatio
 - A finetuned gemini-2.5-flash model processes the social media post to extract the main claims.
 - Using the Google Custom Search API, Verify searches for relevant fact-checking articles from reputable sources.
 - An embedding model compares the claims against the retrieved articles to determine which parts of the documents are relevant.
-- Once we built the context, a deberta model finetuned on nli tasks classifies each claim as **entailed**, **refuted**, or **neutral** based on the evidence.
+- Once we built the context, a deberta model finetuned on nli tasks classifies each claim as **entails**, **contradicts**, or **neutral** based on the evidence.
 ---
 
 ## Support
