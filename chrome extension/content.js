@@ -2,9 +2,42 @@ console.log("[Extension] Content script loaded");
 
 const processedPosts = new Set();
 
+// idk how to use the utils.js one
 function generateId() {
     return "post-" + Math.random().toString(36).substring(2, 15);
 }
+
+//styling
+function customStyles() {
+    const css = `
+    .shreddit-verify-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: #0079d3;
+        color: #fff;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        font-size: 13px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+        transition: background-color 120ms ease, transform 60ms ease;
+        vertical-align: middle;
+        user-select: none;
+    }
+    .shreddit-verify-btn:hover { background: #1491ff; }
+    .shreddit-verify-btn:active { transform: translateY(1px); }
+    .shreddit-verify-btn svg { width: 14px; height: 14px; fill: currentColor; display: inline-block; vertical-align: middle; }
+    `;
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.appendChild(style);
+}
+
+customStyles();
 
 function processTitles() {
     console.log("[Extension] Scanning for title elements");
@@ -42,79 +75,79 @@ function processTitles() {
         console.log("[Extension] Assigned ID:", postId, "Title:", titleText, "Body:", bodyText);
 
         const button = document.createElement("button");
-        button.textContent = "Verify";
-        button.style.background = "#0079d3";
-        button.style.color = "white";
-        button.style.border = "none";
-        button.style.borderRadius = "4px";
-        button.style.cursor = "pointer";
+        button.type = "button";
+        button.className = "shreddit-verify-btn";
+        button.setAttribute("aria-label", "Verify post");
+        button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Verify</span>`;
 
         button.addEventListener("click", () => {
-    console.log("[Extension] Verify clicked for", postId);
+            console.log("[Extension] Verify clicked for", postId);
 
-    chrome.runtime.sendMessage(
-        {
-            type: "SEND_TITLE",
-            id: postId,
-            title: titleText,
-            body: bodyText
-        },
-        response => {
-            console.log("[Extension] Background script responded:", response);
-            if (response.data) {
-                let analysis = response.data.analysis;
-                let processed = {};
+            chrome.runtime.sendMessage(
+                {
+                    type: "SEND_TITLE",
+                    id: postId,
+                    title: titleText,
+                    body: bodyText
+                },
+                response => {
+                    console.log("[Extension] Background script responded:", response);
+                    if (response.data) {
+                        let analysis = response.data.analysis;
+                        let processed = {};
 
-                for (let i = 0; i < analysis.length; i++) {
-                    let item = analysis[i];
-                    let claim = item.claim;
-                    let source = item.source_url;
-                    let span = item.span;
-                    let results = item.results;
+                        for (let i = 0; i < analysis.length; i++) {
+                            let item = analysis[i];
+                            let claim = item.claim;
+                            let source = item.source_url;
+                            let span = item.span;
+                            let results = item.results;
 
-                    if (!(claim in processed)) {
-                        processed[claim] = {
-                            span: span,
-                            claim: claim,
-                            results: []
-                        };
-                    }
-                    for (let j = 0; j < results.length; j++) {
-                        let result = results[j];
-                        processed[claim].results.push({
-                            ...result,
-                            source
-                        });
+                            if (!(claim in processed)) {
+                                processed[claim] = {
+                                    span: span,
+                                    claim: claim,
+                                    results: []
+                                };
+                            }
+                            for (let j = 0; j < results.length; j++) {
+                                let result = results[j];
+                                processed[claim].results.push({
+                                    ...result,
+                                    source
+                                });
+                            }
+                        }
+                        console.log("[Extension] Processed analysis:", processed);
+
+                        // create and insert analysis log
+                        const analysisLog = createAnalysisLog(processed, shredditPost);
+                        shredditPost.insertAdjacentElement("afterend", analysisLog);
+
+                        // highlight spans for each claim
+                        for (let claim in processed) {
+                            let claimData = processed[claim];
+                            let span = claimData.span;
+                            let results = claimData.results;
+
+                            let supportCount = results.filter(r => r.label === "entailment").length;
+                            let contradictCount = results.filter(r => r.label === "contradiction").length;
+
+                            let highlightColor = "#B8860B";
+                            if (!(supportCount > 0 && contradictCount > 0)) {
+                                if (supportCount > contradictCount && supportCount > 0) {
+                                    highlightColor = "#007B7F";
+                                } else if (contradictCount > supportCount && contradictCount > 0) {
+                                    highlightColor = "#8E2DE2";
+                                }
+                            }
+
+                            highlightSpan(span, titleEl, bodyText ? shredditPost.querySelector('[slot="text-body"]') : null, highlightColor, claimData, results);
+                        }
                     }
                 }
-                console.log("[Extension] Processed analysis:", processed);
-
-                // create and insert analysis log
-                const analysisLog = createAnalysisLog(processed, shredditPost);
-                shredditPost.insertAdjacentElement("afterend", analysisLog);
-
-                // highlight spans for each claim
-                for (let claim in processed) {
-                    let claimData = processed[claim];
-                    let span = claimData.span;
-                    let results = claimData.results;
-
-                    let supportCount = results.filter(r => r.label === "entailment").length;
-                    let contradictCount = results.filter(r => r.label === "contradiction").length;
-
-                    let highlightColor = "#ffeb3b";
-                    if (supportCount > contradictCount && supportCount > 0) {
-                        highlightColor = "#4caf50";
-                    } else if (contradictCount > supportCount && contradictCount > 0) {
-                        highlightColor = "#f44336";
-                    }
-
-                    highlightSpan(span, titleEl, bodyText ? shredditPost.querySelector('[slot="text-body"]') : null, highlightColor, claimData, results);
-                }
-            }
-        }
-    );
-});
+            );
+        });
 
         shredditPost.insertAdjacentElement("afterend", button);
         console.log("[Extension] Button inserted after post");
@@ -229,9 +262,9 @@ function createAnalysisLog(processed, shredditPost) {
         results.forEach((result, idx) => {
             let labelColor = "#818384";
             if (result.label === "entailment") {
-                labelColor = "#4caf50";
+                labelColor = "#007B7F";
             } else if (result.label === "contradiction") {
-                labelColor = "#ff6b6b";
+                labelColor = "#8E2DE2";
             }
 
             html += `<div style="cursor: pointer; padding: 4px 8px; background: ${labelColor}; color: white; border-radius: 3px; font-size: 11px; font-weight: bold; user-select: none;" class="verdict-tag" data-claim="${claim}" data-index="${idx}">`;
