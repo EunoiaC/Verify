@@ -131,42 +131,65 @@ function highlightSpan(span, titleEl, bodyEl, color, claimData, results) {
     }
 }
 
+
 function highlightInElement(span, element, color, claimData, results) {
-    const text = element.textContent;
-    const index = text.indexOf(span);
+    const fullText = element.textContent;
+    const index = fullText.indexOf(span);
+    if (index === -1) return false;
 
-    if (index !== -1) {
-        const before = text.substring(0, index);
-        const match = text.substring(index, index + span.length);
-        const after = text.substring(index + span.length);
+    // find start and end containers for the range
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    let currentOffset = 0;
+    let startNode = null, startOffset = 0, endNode = null, endOffset = 0;
+    const endIndex = index + span.length;
 
-        // clear element and rebuild with highlight
-        element.innerHTML = '';
-
-        if (before) element.appendChild(document.createTextNode(before));
-
-        const highlightEl = document.createElement("span");
-        highlightEl.textContent = match;
-        //highlightEl.style.backgroundColor = color;
-        highlightEl.style.cursor = "pointer";
-        highlightEl.style.padding = "2px 4px";
-        highlightEl.style.borderRadius = "2px";
-
-        // add hover popup
-        highlightEl.addEventListener("mouseenter", (e) => {
-            showPopup(e, claimData, results, color);
-        });
-
-        highlightEl.addEventListener("mouseleave", () => {
-            removePopup();
-        });
-
-        element.appendChild(highlightEl);
-        if (after) element.appendChild(document.createTextNode(after));
-
-        return true;
+    while ((node = walker.nextNode())) {
+        const nodeLen = node.nodeValue.length;
+        if (!startNode && currentOffset + nodeLen > index) {
+            startNode = node;
+            startOffset = index - currentOffset;
+        }
+        if (currentOffset + nodeLen >= endIndex) {
+            endNode = node;
+            endOffset = endIndex - currentOffset;
+            break;
+        }
+        currentOffset += nodeLen;
     }
-    return false;
+
+    if (!startNode || !endNode) return false;
+
+    const range = document.createRange();
+    range.setStart(startNode, startOffset);
+    range.setEnd(endNode, endOffset);
+
+    // highlight element and attach handlers
+    const highlightEl = document.createElement("span");
+    highlightEl.textContent = range.toString();
+    //visual styles (do not overwrite complex layout)
+    highlightEl.style.cursor = "pointer";
+    highlightEl.style.padding = "2px 4px";
+    highlightEl.style.borderRadius = "2px";
+    if (color) highlightEl.style.backgroundColor = color;
+
+    highlightEl.addEventListener("mouseenter", (e) => {
+        showPopup(e, claimData, results, color);
+    });
+    highlightEl.addEventListener("mouseleave", () => {
+        removePopup();
+    });
+
+    // Replace the range contents with the highlight element
+    try {
+        range.deleteContents();
+        range.insertNode(highlightEl);
+    } catch (err) {
+        console.error("[Extension] Failed to apply highlight range:", err);
+        return false;
+    }
+
+    return true;
 }
 
 function createAnalysisLog(processed, shredditPost) {
