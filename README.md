@@ -76,17 +76,16 @@ Verify searches a wide range of reputable sources to ensure accurate verificatio
    - Click **Load unpacked**
    - Select the `chrome_extension` folder
 
-4. **You're ready** — Navigate to Reddit and look for the Verify button
+4. Navigate to Reddit and look for the Verify button
 
 ---
 
 ## How It Works
 
-- **Smart detection** — Identifies factual claims in posts
-- **Real verification** — Cross-references against current sources
-- **Instant results** — Shows confidence levels and source snippets inline
-- **Respectful design** — Blends seamlessly with Reddit's interface
-
+- A finetuned gemini-2.5-flash model processes the social media post to extract the main claims.
+- Using the Google Custom Search API, Verify searches for relevant fact-checking articles from reputable sources.
+- An embedding model compares the claims against the retrieved articles to determine which parts of the documents are relevant.
+- Once we built the context, a deberta model finetuned on nli tasks classifies each claim as **entailed**, **refuted**, or **neutral** based on the evidence.
 ---
 
 ## Support
