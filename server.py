@@ -8,6 +8,11 @@ from sentence_transformers import SentenceTransformer, util
 from typing import List, Tuple
 import torch
 
+import nltk
+
+nltk.download('punkt', quiet=True)
+from nltk.tokenize import sent_tokenize
+
 print("initialization done")
 
 class DocumentContextRetriever:
@@ -74,12 +79,8 @@ class DocumentContextRetriever:
             return [item['chunk'] for item in chunks_with_metadata]
 
     def _split_sentences(self, text: str) -> List[str]:
-        import re
-
-        sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', text)
-
+        sentences = sent_tokenize(text)
         sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
-
         return sentences
 
 
