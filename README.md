@@ -23,19 +23,19 @@ All results appear right on the post.
 
 ![Verify catching misinformation](/examples/refute.png)
 
-*A user verifies a claim. Verify surfaces sources that directly contradict it.*
+*A user verifies a claim that a user posted about from a satirical article. Verify finds alternate, trustworthy sources that directly contradict it.*
 
 ### Confirming Accurate Information
 
 ![Verify confirming facts](/examples/support.png)
 
-*A claim gets verified against multiple reliable sources.*
+*Verify checks if these quotes were actually said*
 
 ### When Facts Are Complicated
 
 ![Verify handling nuance](/examples/support_and_refute.png)
 
-*Some claims aren't black and white. Verify shows you the nuance.*
+*Verify can find multiple documents with different results, allowing the user to check sources for themselves*
 
 ---
 
