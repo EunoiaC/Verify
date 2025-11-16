@@ -1,5 +1,4 @@
-# Verify
-
+![Verify catching misinformation](/examples/cac_logo.jpg)
 **Stop misinformation before it spreads. Verify claims directly on social media.**
 
 Verify is a browser extension that adds fact-checking to scoial media. With a single click, get instant verification results for any claim along with sources.
