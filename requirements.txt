@@ -1,0 +1,13 @@
+torch~=2.7.1
+nltk~=3.9.1
+transformers~=4.53.0
+sentence-transformers~=3.3.1
+Flask~=3.1.2
+flask-cors~=6.0.1
+google~=3.0.0
+protobuf~=5.29.4
+certifi~=2025.8.3
+requests~=2.32.4
+dotenv~=0.9.9
+python-dotenv~=1.2.1
+newspaper3k~=0.2.8

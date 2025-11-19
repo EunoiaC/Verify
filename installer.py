@@ -3,14 +3,14 @@ import zipfile
 import urllib.request
 from pathlib import Path
 
-curr_release = "v1.0.0"
+release_tag = "release"
 
 def create_installer():
     print("Chrome Extension Installer")
     print("=" * 50)
 
     # Get extension URL or path
-    extension_source = f"https://github.com/EunoiaC/Verify/releases/download/release/installable-extension.zip"
+    extension_source = f"https://github.com/EunoiaC/Verify/releases/download/{release_tag}/installable-extension.zip"
     install_dir = input(f"\nEnter installation directory (default: ./verify_extension): ").strip()
     if not install_dir:
         install_dir = "./verify_extension"
