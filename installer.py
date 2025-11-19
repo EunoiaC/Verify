@@ -11,9 +11,9 @@ def create_installer():
 
     # Get extension URL or path
     extension_source = f"https://github.com/EunoiaC/Verify/releases/download/{release_tag}/installable-extension.zip"
-    install_dir = input(f"\nEnter installation directory (default: ./verify_extension): ").strip()
+    install_dir = input(f"\nEnter installation directory (default: current directory): ").strip()
     if not install_dir:
-        install_dir = "./verify_extension"
+        install_dir = "."
 
     # Create installation directory
     install_path = Path(install_dir)
@@ -36,6 +36,13 @@ def create_installer():
     if extension_source.startswith(('http://', 'https://')):
         zip_path.unlink()
 
+    # delete __MACOSX folder if exists
+    macosx_path = install_path / "__MACOSX"
+    if macosx_path.exists() and macosx_path.is_dir():
+        import shutil
+        shutil.rmtree(macosx_path)
+    print("Extension files extracted.")
+
     # Create .env file
     print("\n" + "=" * 50)
     print("API Configuration")
@@ -51,6 +58,13 @@ GOOGLE_SEARCH_API="{google_search_api}"
     env_path = install_path / "installable-extension" / ".env"
     with open(env_path, 'w') as f:
         f.write(env_content)
+
+    # go into install_path/installable-extension and install requirements.txt
+    print("\nInstalling required Python packages...")
+    # figure out if we need pip or pip3
+    pip_command = 'pip3' if os.system('pip3 --version') == 0 else 'pip'
+
+    os.system(f'{pip_command} install -r "{install_path / "installable-extension" / "requirements.txt"}"')
 
     print(f"\n✓ Installation complete!")
     print(f"✓ Extension files: {install_path.absolute()}")
