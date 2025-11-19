@@ -10,7 +10,7 @@ def create_installer():
     print("=" * 50)
 
     # Get extension URL or path
-    extension_source = f"https://github.com/EunoiaC/Verify/releases/download/{curr_release}/installable-extension.zip"
+    extension_source = f"https://github.com/EunoiaC/Verify/releases/download/release/installable-extension.zip"
     install_dir = input(f"\nEnter installation directory (default: ./verify_extension): ").strip()
     if not install_dir:
         install_dir = "./verify_extension"
@@ -48,7 +48,7 @@ def create_installer():
 GOOGLE_SEARCH_API="{google_search_api}"
 '''
 
-    env_path = install_path / ".env"
+    env_path = install_path / "installable-extension" / ".env"
     with open(env_path, 'w') as f:
         f.write(env_content)
 
@@ -59,7 +59,7 @@ GOOGLE_SEARCH_API="{google_search_api}"
     print("1. Open chrome://extensions/")
     print("2. Enable 'Developer mode'")
     print("3. Click 'Load unpacked'")
-    print(f"4. Select the folder: {install_path.absolute()}")
+    print(f"4. Select the folder: {(install_path/"installable-extension").absolute()}")
 
 
 if __name__ == "__main__":
